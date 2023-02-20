@@ -15,7 +15,7 @@ public final class TweakStore {
 	fileprivate var tweakCollections: [String: TweakCollection] = [:]
 
 	/// Useful when exporting or checking that a tweak exists in tweakCollections
-	private let allTweaks: Set<AnyTweak>
+	private var allTweaks: Set<AnyTweak>
 
 	/// We hold a reference to the storeName so we can have a better error message if a tweak doesn't exist in allTweaks.
 	private let storeName: String
@@ -40,6 +40,38 @@ public final class TweakStore {
 		self.enabled = enabled
 		self.allTweaks = Set(tweaks.reduce([]) { $0 + $1.tweakCluster })
 
+		self.allTweaks.forEach { tweak in
+			// Find or create its TweakCollection
+			var tweakCollection: TweakCollection
+			if let existingCollection = tweakCollections[tweak.collectionName] {
+				tweakCollection = existingCollection
+			} else {
+				tweakCollection = TweakCollection(title: tweak.collectionName)
+				tweakCollections[tweakCollection.title] = tweakCollection
+			}
+
+			// Find or create its TweakGroup
+			var tweakGroup: TweakGroup
+			if let existingGroup = tweakCollection.tweakGroups[tweak.groupName] {
+				tweakGroup = existingGroup
+			} else {
+				tweakGroup = TweakGroup(title: tweak.groupName)
+			}
+
+			// Add the tweak to the tree
+			tweakGroup.tweaks[tweak.tweakName] = tweak
+			tweakCollection.tweakGroups[tweakGroup.title] = tweakGroup
+			tweakCollections[tweakCollection.title] = tweakCollection
+		}
+	}
+	
+	public func addTweak(_ tweaks: [TweakClusterType]) {
+		//self.allTweaks +=
+		let items = Set(tweaks.reduce([]) { $0 + $1.tweakCluster })
+		items.forEach({
+			self.allTweaks.insert($0)
+		})
+		
 		self.allTweaks.forEach { tweak in
 			// Find or create its TweakCollection
 			var tweakCollection: TweakCollection

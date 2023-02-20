@@ -17,4 +17,8 @@ internal final class HitTransparentWindow: UIWindow {
 		let result = super.hitTest(point, with: event)
 		return (result == self) ? nil : result
 	}
+    
+    override func makeKey() {
+        
+    }
 }

@@ -16,7 +16,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 
-		window = TweakWindow(frame: UIScreen.main.bounds, tweakStore: ExampleTweaks.defaultStore)
+        window = TweakWindow(frame: UIScreen.main.bounds, enable: true) {
+            ExampleTweaks.defaultStore
+        }
 
 		/*	Note: if you're using the shake gesture for something else (say, React Native) then you have two options:
 				1. Use the .twoFingerDoubleTap gesture, like so:

@@ -59,6 +59,7 @@ class ViewController: UIViewController {
         // which is only called once in the lifecycle of the view, yet these bindings will update whenever the underlying tweaks change!
         // Note that we're holding on to the `bindingIdentifier`: to avoid memory leaks, we tear down these bindings in `deinit`
         tweakBindings.insert(ExampleTweaks.bind(ExampleTweaks.colorTint) { self.bounceButton.backgroundColor = $0 })
+        tweakBindings.insert(ExampleTweaks.bind(ExampleTweaks.colorTint) { self.bounceButton.setTitleColor($0, for: .normal) })
         tweakBindings.insert(ExampleTweaks.bind(ExampleTweaks.colorButtonText) { self.bounceButton.setTitleColor($0, for: .normal) })
         tweakBindings.insert(ExampleTweaks.bind(ExampleTweaks.colorBackground) { self.view.backgroundColor = $0 })
         tweakBindings.insert(ExampleTweaks.bind(ExampleTweaks.colorText1) { self.titleLabel.textColor = $0; self.bodyLabel.textColor = $0 })
@@ -99,6 +100,7 @@ class ViewController: UIViewController {
 
         ExampleTweaks.actionPrintToConsole.addClosure {
             print("🤖 I'm sorry Dave")
+            ExampleTweaks.defaultStore.addTweak([ExampleTweaks.colorBackground, ExampleTweaks.colorTint])
         }
         ExampleTweaks.actionPrintToConsole.addClosure {
             print("🤖 I'm afraid I can't do that")

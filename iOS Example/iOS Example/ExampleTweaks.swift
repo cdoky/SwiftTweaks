@@ -50,8 +50,8 @@ public struct ExampleTweaks: TweakLibraryType {
 
 	public static let defaultStore: TweakStore = {
 		let allTweaks: [TweakClusterType] = [
-			colorBackground,
-			colorTint,
+//			colorBackground,
+//			colorTint,
 			colorButtonText,
 			horizontalMargins,
 			verticalMargins,

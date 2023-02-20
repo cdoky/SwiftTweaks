@@ -35,12 +35,14 @@ import UIKit
 	private let gestureType: GestureType
 
 	/// By holding on to the TweaksViewController, we get easy state restoration!
-	private var tweaksViewController: TweaksViewController! // requires self for init
+	private weak var tweaksViewController: TweaksViewController! // requires self for init
 
 	/// Represents the "floating tweaks UI"
 	fileprivate var floatingTweakGroupUIWindow: HitTransparentWindow?
-	fileprivate let tweakStore: TweakStore
-
+	fileprivate var tweakStore: TweakStore {
+		self.__buildStore()
+	}
+	private var __buildStore: ()-> TweakStore
 	/// We need to know if we're running in the simulator (because shake gestures don't have a time duration in the simulator)
 	private let runningInSimulator: Bool = {
 		#if targetEnvironment(simulator)
@@ -66,45 +68,42 @@ import UIKit
 
 	// MARK: Init
 
-	public init(frame: CGRect, gestureType: GestureType = .shake, tweakStore: TweakStore) {
+	public init(frame: CGRect, gestureType: GestureType = .shake, enable: Bool, buildStore: @escaping ()-> TweakStore) {
 		self.gestureType = gestureType
-		self.tweakStore = tweakStore
-
+		self.__buildStore = buildStore
+		
 		super.init(frame: frame)
 
-		commonInit(tweakStore: tweakStore)
+		commonInit(enable)
 	}
 
     @available(iOS 13.0, *)
-    public init(windowScene: UIWindowScene, gestureType: GestureType = .shake, tweakStore: TweakStore) {
+	public init(windowScene: UIWindowScene, gestureType: GestureType = .shake, enable: Bool, buildStore: @escaping ()-> TweakStore) {
         self.gestureType = gestureType
-        self.tweakStore = tweakStore
-
+		self.__buildStore = buildStore
+		
         super.init(windowScene: windowScene)
 
-		commonInit(tweakStore: tweakStore)
+		commonInit(enable)
     }
 	
-	private func commonInit(tweakStore: TweakStore) {
+	private func commonInit(_ enable: Bool) {
         tintColor = AppTheme.Colors.controlTinted
-
-        if tweakStore.enabled {
-            switch gestureType {
-            case .gesture(let gestureRecognizer):
-                gestureRecognizer.addTarget(self, action: #selector(self.presentTweaks))
-            case .twoFingerDoubleTap:
-                let twoFingerDoubleTapGesture = UITapGestureRecognizer()
-                twoFingerDoubleTapGesture.numberOfTapsRequired = 2
-                twoFingerDoubleTapGesture.numberOfTouchesRequired = 2
-                twoFingerDoubleTapGesture.addTarget(self, action: #selector(self.presentTweaks))
-                self.addGestureRecognizer(twoFingerDoubleTapGesture)
-            case .shake:
-                break
-            }
-        }
-
-        tweaksViewController = TweaksViewController(tweakStore: tweakStore, delegate: self)
-        tweaksViewController.floatingTweaksWindowPresenter = self
+		guard enable else {
+			return
+		}
+		switch gestureType {
+		case .gesture(let gestureRecognizer):
+			gestureRecognizer.addTarget(self, action: #selector(self.presentTweaks))
+		case .twoFingerDoubleTap:
+			let twoFingerDoubleTapGesture = UITapGestureRecognizer()
+			twoFingerDoubleTapGesture.numberOfTapsRequired = 2
+			twoFingerDoubleTapGesture.numberOfTouchesRequired = 2
+			twoFingerDoubleTapGesture.addTarget(self, action: #selector(self.presentTweaks))
+			self.addGestureRecognizer(twoFingerDoubleTapGesture)
+		case .shake:
+			break
+		}
 	}
 
 	public required init?(coder aDecoder: NSCoder) {
@@ -151,6 +150,8 @@ import UIKit
 		}
 
 		if !(visibleViewController is TweaksViewController) {
+			tweaksViewController = TweaksViewController(tweakStore: self.__buildStore(), delegate: self)
+			tweaksViewController.floatingTweaksWindowPresenter = self
 			switch visibleViewController.traitCollection.horizontalSizeClass {
 			case .compact, .unspecified:
 				visibleViewController.present(tweaksViewController, animated: true, completion: nil)
@@ -189,7 +190,7 @@ extension TweakWindow: FloatingTweaksWindowPresenter {
 	internal func presentFloatingTweaksUI(forTweakGroup tweakGroup: TweakGroup) {
 		guard floatingTweakGroupUIWindow == nil else { return }
 
-		let window = HitTransparentWindow()
+        let window = HitTransparentWindow()
 		window.frame = UIScreen.main.bounds
 		window.backgroundColor = UIColor.clear
 
@@ -217,7 +218,7 @@ extension TweakWindow: FloatingTweaksWindowPresenter {
 		window.alpha = 0
 		let destinationWindowFrame = floatingTweaksVC.view.frame
 		let initialWindowFrame = destinationWindowFrame.offsetBy(dx: 0, dy: floatingTweaksVC.view.bounds.height)
-		window.makeKeyAndVisible()
+        window.isHidden = false
 		floatingTweakGroupUIWindow = window
 
 		window.frame = initialWindowFrame
@@ -249,6 +250,7 @@ extension TweakWindow: FloatingTweaksWindowPresenter {
 			},
 			completion: { _ in
 				floatingTweakGroupUIWindow.isHidden = true
+                floatingTweakGroupUIWindow.removeFromSuperview()
 				self.floatingTweakGroupUIWindow = nil
 			}
 		)

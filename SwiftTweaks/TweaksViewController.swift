@@ -45,7 +45,8 @@ public final class TweaksViewController: UIViewController {
 
 fileprivate extension TweaksViewController {
 	func displayFloatingTweakPanel(forTweakGroup tweakGroup: TweakGroup) {
-		delegate.tweaksViewControllerRequestsDismiss(self) {
+		delegate.tweaksViewControllerRequestsDismiss(self) { [weak self] in
+            guard let `self` = self else { return }
 			self.floatingTweaksWindowPresenter?.presentFloatingTweaksUI(forTweakGroup: tweakGroup)
 		}
 	}

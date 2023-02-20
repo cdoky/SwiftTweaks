@@ -84,17 +84,19 @@ internal final class TweakCollectionViewController: UIViewController {
 	// MARK: Events
 
 	@objc private func handleKeyboardVisibilityChange(_ notification: Notification) {
-		if
+		guard
 			let userInfo = notification.userInfo,
 			let keyboardSize = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
 			let animationDuration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? NSNumber
-		{
-			UIView.animate(
-				withDuration: animationDuration.doubleValue,
-				animations: {
-					self.tableView.contentInset.bottom = keyboardSize.height
-			})
+		 else {
+			return
 		}
+        UIView.animate(
+            withDuration: animationDuration.doubleValue,
+            animations: { [weak self] in
+                guard let `self` = self else { return }
+                self.tableView.contentInset.bottom = keyboardSize.height
+        })
 	}
 
 	@objc private func dismissButtonTapped() {
