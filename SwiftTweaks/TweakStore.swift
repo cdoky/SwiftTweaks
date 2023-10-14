@@ -158,12 +158,7 @@ public final class TweakStore {
 	}
 
 	internal func currentValueForTweak<T>(_ tweak: Tweak<T>) -> T {
-		if allTweaks.contains(AnyTweak(tweak: tweak)) {
-			return enabled ? persistence.currentValueForTweak(tweak) ?? tweak.defaultValue : tweak.defaultValue
-		} else {
-			print("Error: the tweak \"\(tweak.tweakIdentifier)\" isn't included in the tweak store \"\(storeName)\". Returning the default value.")
-			return tweak.defaultValue
-		}
+		return enabled ? persistence.currentValueForTweak(tweak) ?? tweak.defaultValue : tweak.defaultValue
 	}
 
 	internal func currentViewDataForTweak(_ tweak: AnyTweak) -> TweakViewData {
