@@ -35,7 +35,7 @@ import UIKit
 	private let gestureType: GestureType
 
 	/// By holding on to the TweaksViewController, we get easy state restoration!
-	private weak var tweaksViewController: TweaksViewController! // requires self for init
+	private var tweaksViewController: TweaksViewController! // requires self for init
 
 	/// Represents the "floating tweaks UI"
 	fileprivate var floatingTweakGroupUIWindow: HitTransparentWindow?
